@@ -13,7 +13,7 @@ cd "$PAK_DIR" || exit 1
 mkdir -p "$USERDATA_PATH/$PAK_NAME"
 
 architecture=arm
-if uname -m | grep -q '64'; then
+if [ uname -m | grep -q '64' ]; then
     architecture=arm64
 fi
 
@@ -31,7 +31,6 @@ add_game_to_recents() {
     fi
 
     rm -f "/tmp/recent.txt"
-    touch "/tmp/recent.txt"
     printf "%s\t%s\n" "/$FILEPATH" "$GAME_ALIAS" >"/tmp/recent.txt"
     cat "$RECENTS" >>"/tmp/recent.txt"
     mv "/tmp/recent.txt" "$RECENTS"
@@ -147,7 +146,7 @@ main() {
                 sleep 1
             else
                 >"$results_list_file"
-                sed -e 's/[^(]*//' -e 's/\// /' -e 's/\[[^]]*\]//g' -e 's/[[:space:]]*$//' -e 's/\.[^.]*$//' "$search_list_file" > "$results_list_file"
+                sed -e 's/[^(]*//' -e 's/\// /' -e 's/\[[^]]*\]//g' -e 's/([^)]*)//g' -e 's/[[:space:]]*$//' -e 's/\.[^.]*$//' "$search_list_file" > "$results_list_file"
             fi
         fi
 
