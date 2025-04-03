@@ -168,8 +168,6 @@ main() {
                 EMU_NAME=$(get_emu_name "$EMU_FOLDER")
                 EMU_PATH=$(get_emu_path "$EMU_NAME")
                 ROM_ALIAS=$(get_rom_alias "$FILE")
-
-                ROM_ALIAS=$(get_rom_alias "$FILE")
                 rm -f /tmp/stay_awake
 
                 add_game_to_recents "$FILE" "$ROM_ALIAS"
