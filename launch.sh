@@ -146,7 +146,7 @@ main() {
                 sleep 1
             else
                 >"$results_list_file"
-                sed -e 's/[^(]*//' -e 's/\// /' -e 's/\[[^]]*\]//g' -e 's/([^)]*)//g' -e 's/[[:space:]]*$//' -e 's/\.[^.]*$//' "$search_list_file" > "$results_list_file"
+                sed -e 's/[^(]*(//' -e 's/\// /' -e 's/\[[^]]*\]//g' -e 's/([^)]*)//g' -e 's/[[:space:]]*$//' -e 's/\.[^.]*$//' -e 's/^/(/' "$search_list_file" > "$results_list_file"
             fi
         fi
 
