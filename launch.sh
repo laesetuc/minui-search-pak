@@ -117,7 +117,7 @@ main() {
 
             # Get search term
             killall minui-presenter >/dev/null 2>&1 || true
-            SEARCH_TERM="$(minui-keyboard --title "Search" --initial-value "$SEARCH_TERM")"
+            SEARCH_TERM="$(minui-keyboard --title "Search" --show-hardware-group --initial-value "$SEARCH_TERM")"
             exit_code=$?
             if [ "$exit_code" -eq 2 ]; then
                 >"$previous_search_file"
