@@ -13,7 +13,7 @@ cd "$PAK_DIR" || exit 1
 mkdir -p "$USERDATA_PATH/$PAK_NAME"
 
 architecture=arm
-if [ uname -m | grep -q '64' ]; then
+if [[ "$(uname -m)" == *"64"* ]]; then
     architecture=arm64
 fi
 
@@ -117,7 +117,7 @@ main() {
 
             # Get search term
             killall minui-presenter >/dev/null 2>&1 || true
-            SEARCH_TERM="$(minui-keyboard --header "Search" --initial-value "$SEARCH_TERM")"
+            SEARCH_TERM="$(minui-keyboard --title "Search" --show-hardware-group --initial-value "$SEARCH_TERM")"
             exit_code=$?
             if [ "$exit_code" -eq 2 ]; then
                 >"$previous_search_file"
@@ -146,7 +146,7 @@ main() {
                 sleep 1
             else
                 >"$results_list_file"
-                sed -e 's/[^(]*(//' -e 's/\// /' -e 's/\[[^]]*\]//g' -e 's/([^)]*)//g' -e 's/[[:space:]]*$//' -e 's/\.[^.]*$//' -e 's/^/(/' "$search_list_file" > "$results_list_file"
+                sed -e 's/^[^(]*(/(/' -e 's/)[^/]*\//) /' -e 's/[[:space:]]*$//' "$search_list_file" > "$results_list_file"
             fi
         fi
 
