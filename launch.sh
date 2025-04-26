@@ -27,7 +27,7 @@ add_game_to_recents() {
     filepath="${filepath#"$SDCARD_PATH/"}"
     recents="$SDCARD_PATH/.userdata/shared/.minui/recent.txt"
     if [ -f "$recents" ]; then
-        sed -i "#/$filepath\t$game_alias#d" "$recents"
+        sed -i "\#/$filepath$(printf '\t')$game_alias#d" "$recents"
     fi
 
     rm -f "/tmp/recent.txt"
@@ -149,7 +149,11 @@ main() {
                 show_message "Could not find any games." 2
             else
                 >"$results_list_file"
-                sed -e 's/^[^(]*(/(/' -e 's/)[^/]*\//) /' -e 's/[[:space:]]*$//' "$search_list_file" | jq -R -s 'split("\n")[:-1]' > "$results_list_file"
+                sed "$search_list_file" \
+                    -e 's/^[^(]*(/(/' \
+                    -e 's/)[^/]*\//) /' \
+                    -e 's/[[:space:]]*$//' \
+                    | jq -R -s 'split("\n")[:-1]' > "$results_list_file"
             fi
         fi
 
