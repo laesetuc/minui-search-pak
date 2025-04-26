@@ -2,7 +2,7 @@
 PAK_DIR="$(dirname "$0")"
 PAK_NAME="$(basename "$PAK_DIR")"
 PAK_NAME="${PAK_NAME%.*}"
-[ -f "$USERDATA_PATH/$PAK_NAME/debug" ] && set -x
+set -x
 
 rm -f "$LOGS_PATH/$PAK_NAME.txt"
 exec >>"$LOGS_PATH/$PAK_NAME.txt"
@@ -12,60 +12,60 @@ echo "$0" "$@"
 cd "$PAK_DIR" || exit 1
 mkdir -p "$USERDATA_PATH/$PAK_NAME"
 
-architecture=arm
+ARCHITECTURE=arm
 if [[ "$(uname -m)" == *"64"* ]]; then
-    architecture=arm64
+    ARCHITECTURE=arm64
 fi
 
 export HOME="$USERDATA_PATH/$PAK_NAME"
 export LD_LIBRARY_PATH="$PAK_DIR/lib:$LD_LIBRARY_PATH"
-export PATH="$PAK_DIR/bin/$architecture:$PAK_DIR/bin/$PLATFORM:$PAK_DIR/bin:$PATH"
+export PATH="$PAK_DIR/bin/$ARCHITECTURE:$PAK_DIR/bin/$PLATFORM:$PAK_DIR/bin:$PATH"
 
 add_game_to_recents() {
-    FILEPATH="$1" GAME_ALIAS="$2"
+    filepath="$1" game_alias="$2"
 
-    FILEPATH="${FILEPATH#"$SDCARD_PATH/"}"
-    RECENTS="$SDCARD_PATH/.userdata/shared/.minui/recent.txt"
-    if [ -f "$RECENTS" ]; then
-        sed -i "#/$FILEPATH\t$GAME_ALIAS#d" "$RECENTS"
+    filepath="${filepath#"$SDCARD_PATH/"}"
+    recents="$SDCARD_PATH/.userdata/shared/.minui/recent.txt"
+    if [ -f "$recents" ]; then
+        sed -i "#/$filepath\t$game_alias#d" "$recents"
     fi
 
     rm -f "/tmp/recent.txt"
-    printf "%s\t%s\n" "/$FILEPATH" "$GAME_ALIAS" >"/tmp/recent.txt"
-    cat "$RECENTS" >>"/tmp/recent.txt"
-    mv "/tmp/recent.txt" "$RECENTS"
+    printf "%s\t%s\n" "/$filepath" "$game_alias" >"/tmp/recent.txt"
+    cat "$recents" >>"/tmp/recent.txt"
+    mv "/tmp/recent.txt" "$recents"
 }
 
 get_rom_alias() {
-    FILEPATH="$1"
-    filename="$(basename "$FILEPATH")"
+    filepath="$1"
+    filename="$(basename "$filepath")"
     filename="${filename%.*}"
     filename="$(echo "$filename" | sed 's/([^)]*)//g' | sed 's/\[[^]]*\]//g' | sed 's/[[:space:]]*$//')"
     echo "$filename"
 }
 
 get_emu_folder() {
-    FILEPATH="$1"
-    ROMS="$SDCARD_PATH/Roms"
+    filepath="$1"
+    roms="$SDCARD_PATH/Roms"
 
-    echo "${FILEPATH#"$ROMS/"}" | cut -d'/' -f1
+    echo "${filepath#"$roms/"}" | cut -d'/' -f1
 }
 
 get_emu_name() {
-    EMU_FOLDER="$1"
+    emu_folder="$1"
 
-    echo "$EMU_FOLDER" | sed 's/.*(\([^)]*\)).*/\1/'
+    echo "$emu_folder" | sed 's/.*(\([^)]*\)).*/\1/'
 }
 
 get_emu_path() {
-    EMU_NAME="$1"
-    platform_emu="$SDCARD_PATH/Emus/$PLATFORM/${EMU_NAME}.pak/launch.sh"
+    emu_name="$1"
+    platform_emu="$SDCARD_PATH/Emus/$PLATFORM/${emu_name}.pak/launch.sh"
     if [ -f "$platform_emu" ]; then
         echo "$platform_emu"
         return
     fi
 
-    pak_emu="$SDCARD_PATH/.system/$PLATFORM/paks/Emus/${EMU_NAME}.pak/launch.sh"
+    pak_emu="$SDCARD_PATH/.system/$PLATFORM/paks/Emus/${emu_name}.pak/launch.sh"
     if [ -f "$pak_emu" ]; then
         echo "$pak_emu"
         return
@@ -104,49 +104,52 @@ main() {
         show_message "minui-presenter not found" 2
         return 1
     fi
+    if ! command -v minui-keyboard >/dev/null 2>&1; then
+        show_message "minui-keyboard not found" 2
+        return 1
+    fi
+    if ! command -v minui-list >/dev/null 2>&1; then
+        show_message "minui-list not found" 2
+        return 1
+    fi
+
+    search_list_file="/tmp/search-list"
+    results_list_file="/tmp/results-list"
+    previous_search_file="/tmp/search-term"
+    minui_ouptut_file="/tmp/minui-output"
 
     while true; do
-
-        search_list_file="/tmp/search-list"
-        results_list_file="/tmp/results-list"
-        previous_search_file="/tmp/search-term"
-        SEARCH_TERM=$(cat "$previous_search_file")
+        search_term=$(cat "$previous_search_file")
 
         total=$(cat "$search_list_file" | wc -l)
         if [ "$total" -eq 0 ]; then
 
             # Get search term
             killall minui-presenter >/dev/null 2>&1 || true
-            SEARCH_TERM="$(minui-keyboard --title "Search" --show-hardware-group --initial-value "$SEARCH_TERM")"
+            minui-keyboard --title "Search" --initial-value "$search_term" --show-hardware-group --write-location "$minui_ouptut_file"
             exit_code=$?
-            if [ "$exit_code" -eq 2 ]; then
+            if [ "$exit_code" -eq 2 ] || [ "$exit_code" -eq 3 ]; then
                 >"$previous_search_file"
-                return 2
-            fi
-            if [ "$exit_code" -eq 3 ]; then
-                >"$previous_search_file"
-                return 3
+                return $exit_code
             fi
             if [ "$exit_code" -ne 0 ]; then
                 show_message "Error entering search term" 2
                 return 1
             fi
-            echo "$SEARCH_TERM" > "$previous_search_file"
+            search_term=$(cat "$minui_ouptut_file")
+            echo "$search_term" > "$previous_search_file"
 
             # Perform search
-
             show_message "Searching..."
-            #sleep 1
 
-            find "$SDCARD_PATH/Roms" -type f ! -path '*/\.*' -iname "*$SEARCH_TERM*" ! -name '*.txt' ! -name '*.log' > "$search_list_file"
+            find "$SDCARD_PATH/Roms" -type f ! -path '*/\.*' -iname "*$search_term*" ! -name '*.txt' ! -name '*.log' > "$search_list_file"
             total=$(cat "$search_list_file" | wc -l)
 
             if [ "$total" -eq 0 ]; then
                 show_message "Could not find any games." 2
-                sleep 1
             else
                 >"$results_list_file"
-                sed -e 's/^[^(]*(/(/' -e 's/)[^/]*\//) /' -e 's/[[:space:]]*$//' "$search_list_file" > "$results_list_file"
+                sed -e 's/^[^(]*(/(/' -e 's/)[^/]*\//) /' -e 's/[[:space:]]*$//' "$search_list_file" | jq -R -s 'split("\n")[:-1]' > "$results_list_file"
             fi
         fi
 
@@ -155,23 +158,22 @@ main() {
         total=$(cat "$search_list_file" | wc -l)
         if [ "$total" -gt 0 ]; then
             killall minui-presenter >/dev/null 2>&1 || true
-            selection=$(minui-list --file "$results_list_file" --format text --title "Search: $SEARCH_TERM ($total results)")
-
+            minui-list --file "$results_list_file" --format json --write-location "$minui_ouptut_file" --write-value state --title "Search: $search_term ($total results)"
             exit_code=$?
             if [ "$exit_code" -eq 0 ]; then
+                output=$(cat "$minui_ouptut_file")
+                selected_index="$(echo "$output" | jq -r '.selected')"
+                file=$(sed -n "$((selected_index + 1))p" "$search_list_file")
 
-                linenum=$(grep -n "$selection" "$results_list_file" | cut -d: -f1)
-                FILE=$(cat "$search_list_file" | head -n "$linenum" | tail -1)
-
-                EMU_FOLDER=$(get_emu_folder "$FILE")
-                EMU_NAME=$(get_emu_name "$EMU_FOLDER")
-                EMU_PATH=$(get_emu_path "$EMU_NAME")
-                ROM_ALIAS=$(get_rom_alias "$FILE")
+                emu_folder=$(get_emu_folder "$file")
+                emu_name=$(get_emu_name "$emu_folder")
+                emu_path=$(get_emu_path "$emu_name")
+                rom_alias=$(get_rom_alias "$file")
                 rm -f /tmp/stay_awake
 
-                add_game_to_recents "$FILE" "$ROM_ALIAS"
+                add_game_to_recents "$file" "$rom_alias"
                 killall minui-presenter >/dev/null 2>&1 || true
-                exec "$EMU_PATH" "$FILE"
+                exec "$emu_path" "$file"
             else
                 >"$results_list_file"
                 >"$search_list_file"
