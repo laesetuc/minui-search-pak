@@ -1,0 +1,13 @@
+{
+    "name": "Search",
+    "version": "v0.3.0",
+    "type": "TOOL",
+    "description": "An app for searching your ROM collection.",
+    "author": "Cuteseal",
+    "repo_url": "https://github.com/laesetuc/minui-search-pak",
+    "release_filename": "Search.pak.zip",
+    "platforms": [
+      "tg5040"
+    ],
+    "launch": "launch.sh"
+  }
