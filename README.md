@@ -1,5 +1,5 @@
 # minui-search-pak
-A MinUI app that allows searching of ROM collections.
+An app for searching your ROM collection.
 
 ## Requirements
 
@@ -13,7 +13,7 @@ This pak is designed for and tested with the following MinUI Platforms and devic
 2. Download the latest [release](https://github.com/laesetuc/minui-search-pak/releases) from GitHub.
 3. Copy the zip file to the correct platform folder in the "/Tools" directory on the SD card.
 4. Extract the zip in place, then delete the zip file.
-5. Confirm that there is a `/Tools/$PLATFORM/Favorites.pak/launch.sh` file on your SD card.
+5. Confirm that there is a `/Tools/$PLATFORM/Search.pak/launch.sh` file on your SD card.
 6. Unmount your SD Card and insert it into your MinUI device.
 
 Note: The platform folder name is based on the name of your device. For example, if you are using a TrimUI Brick, the folder is "tg5040". Alternatively, if you're not sure which folder to use, you can copy the .pak folders to all the platform folders.

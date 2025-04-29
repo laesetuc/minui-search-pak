@@ -1,7 +1,7 @@
 {
     "label": "Search",
     "launch": "launch.sh",
-    "description": "Searches for games from the ROMs folder based in input",
+    "description": "An app for searching your ROM collection",
     "platforms": [
         "tg5040"
     ]
