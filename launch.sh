@@ -126,7 +126,7 @@ main() {
 
             # Get search term
             killall minui-presenter >/dev/null 2>&1 || true
-            minui-keyboard --title "Search" --initial-value "$search_term" --show-hardware-group --write-location "$minui_ouptut_file"
+            minui-keyboard --title "Search" --initial-value "$search_term" --show-hardware-group --write-location "$minui_ouptut_file" --disable-auto-sleep 
             exit_code=$?
             if [ "$exit_code" -eq 2 ] || [ "$exit_code" -eq 3 ]; then
                 >"$previous_search_file"
@@ -162,7 +162,7 @@ main() {
         total=$(cat "$search_list_file" | wc -l)
         if [ "$total" -gt 0 ]; then
             killall minui-presenter >/dev/null 2>&1 || true
-            minui-list --file "$results_list_file" --format json --write-location "$minui_ouptut_file" --write-value state --title "Search: $search_term ($total results)"
+            minui-list --file "$results_list_file" --format json --write-location "$minui_ouptut_file" --write-value state --disable-auto-sleep --title "Search: $search_term ($total results)"
             exit_code=$?
             if [ "$exit_code" -eq 0 ]; then
                 output=$(cat "$minui_ouptut_file")
