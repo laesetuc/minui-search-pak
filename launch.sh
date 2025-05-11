@@ -129,7 +129,7 @@ main() {
             minui-keyboard --title "Search" --initial-value "$search_term" --show-hardware-group --write-location "$minui_ouptut_file" --disable-auto-sleep 
             exit_code=$?
             if [ "$exit_code" -eq 2 ] || [ "$exit_code" -eq 3 ]; then
-                >"$previous_search_file"
+                #>"$previous_search_file"
                 return $exit_code
             fi
             if [ "$exit_code" -ne 0 ]; then
@@ -181,6 +181,7 @@ main() {
             else
                 >"$results_list_file"
                 >"$search_list_file"
+                return $exit_code
             fi
         fi
     done
