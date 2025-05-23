@@ -131,8 +131,8 @@ main() {
             if [ "$exit_code" -eq 2 ] || [ "$exit_code" -eq 3 ]; then
                 #>"$previous_search_file"
                 return $exit_code
-            fi
-            if [ "$exit_code" -ne 0 ]; then
+                #echo hi
+            elif [ "$exit_code" -ne 0 ]; then
                 show_message "Error entering search term" 2
                 return 1
             fi
@@ -162,7 +162,7 @@ main() {
         total=$(cat "$search_list_file" | wc -l)
         if [ "$total" -gt 0 ]; then
             killall minui-presenter >/dev/null 2>&1 || true
-            minui-list --file "$results_list_file" --format json --write-location "$minui_ouptut_file" --write-value state --disable-auto-sleep --title "Search: $search_term ($total results)"
+            minui-list --file "$results_list_file" --format json --write-location "$minui_ouptut_file" --write-value state --disable-auto-sleep --action-button "X" --action-text "EXIT"  --title "Search: $search_term ($total results)"
             exit_code=$?
             if [ "$exit_code" -eq 0 ]; then
                 output=$(cat "$minui_ouptut_file")
@@ -178,10 +178,13 @@ main() {
                 add_game_to_recents "$file" "$rom_alias"
                 killall minui-presenter >/dev/null 2>&1 || true
                 exec "$emu_path" "$file"
+            elif [ "$exit_code" -eq 4 ] || [ "$exit_code" -eq 3 ]; then
+                return $exit_code
+                #echo hi
             else
                 >"$results_list_file"
                 >"$search_list_file"
-                return $exit_code
+                #return $exit_code
             fi
         fi
     done
