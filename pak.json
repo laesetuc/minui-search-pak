@@ -1,6 +1,6 @@
 {
     "name": "Search",
-    "version": "0.4.0",
+    "version": "0.5.0",
     "type": "TOOL",
     "description": "An app for searching your ROM collection.",
     "author": "Cuteseal",
